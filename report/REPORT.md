@@ -1,8 +1,8 @@
 # Báo Cáo Lab 7: Embedding & Vector Store
 
-**Họ tên:** [Tên sinh viên]
-**Nhóm:** [Tên nhóm]
-**Ngày:** [Ngày nộp]
+**Họ tên:** Thân Văn Hoàng
+**Nhóm:** 2024
+**Ngày:** 05/06/2026
 
 ---
 
@@ -53,8 +53,11 @@
 | 1 | 01_overview_and_roles.md | HoChiMinh_Wiki.pdf | ~2200 | source, language, category, person, topic, period, summary |
 | 2 | 02_family_background.md | HoChiMinh_Wiki.pdf | ~1400 | source, language, category, person, topic, period, summary |
 | 3 | 03_youth_and_education.md | HoChiMinh_Wiki.pdf | ~2500 | source, language, category, person, topic, period, summary |
-| 4 | 04_overseas_activities.md | HoChiMinh_Wiki.pdf | ~2900 | source, language, category, person, topic, period, summary |
-| 5 | 05_revolutionary_activities.md| HoChiMinh_Wiki.pdf | ~3000 | source, language, category, person, topic, period, summary |
+| 4 | 04_overseas_activities_1911_1923.md | HoChiMinh_Wiki.pdf | ~2900 | source, language, category, person, topic, period, summary |
+| 5 | 05_revolutionary_activities_1924_1941.md | HoChiMinh_Wiki.pdf | ~3000 | source, language, category, person, topic, period, summary |
+| 6 | 06_return_to_vietnam_and_independence_1941_1945.md | HoChiMinh_Wiki.pdf | ~3100 | source, language, category, person, topic, period, summary |
+| 7 | 07_leadership_and_war_1945_1969.md | HoChiMinh_Wiki.pdf | ~3600 | source, language, category, person, topic, period, summary |
+| 8 | 08_personal_life_thought_legacy_and_works.md | HoChiMinh_Wiki.pdf | ~3600 | source, language, category, person, topic, period, summary |
 
 *(Sử dụng toàn bộ 8 file MD trong thư mục data)*
 
@@ -76,8 +79,8 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 | Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
 |-----------|----------|-------------|------------|-------------------|
 | 01_overview | FixedSizeChunker (`fixed_size`) | 5 | 499.2 | Cắt đều đặn nhưng có thể cắt ngang câu. |
-| 01_overview | SentenceChunker (`by_sentences`) | 6 | 381.0 | Rất tốt để giữ nguyên vẹn câu hỏi/đáp. |
-| 01_overview | RecursiveChunker (`recursive`) | 7 | 326.3 | Đảm bảo tính liền mạch về mặt ngữ nghĩa. |
+| 01_overview_and_roles | SentenceChunker (`by_sentences`) | 6 | 381.0 | Tốt: giữ nguyên ranh giới câu, phù hợp câu hỏi về tên khai sinh, năm sinh, vai trò và đóng góp văn hóa. |
+| 01_overview_and_roles.md | RecursiveChunker (`recursive`) | 14 | 179.1 ký tự | Trung bình — chunk nhỏ hơn nhưng theo cấu trúc |
 
 ### Strategy Của Tôi
 
@@ -101,11 +104,11 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 | Thành viên | Strategy | Retrieval Score (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
 | Tôi | FixedSize | 8/10 | Đơn giản, dễ kiểm soát độ dài. | Có thể cắt đứt ý ở giữa câu. |
-| Thành viên A | Sentence | 9/10 | Giữ câu văn toàn vẹn. | Kích thước chunk chênh lệch nhiều. |
-| Thành viên B | Recursive | 9/10 | Ngữ nghĩa hoàn hảo nhất. | Thuật toán chạy chậm hơn. |
+| Đặng Trần Đạt | RecursiveChunker + Filter | 9/10 | Precision cao nhờ filter | Cần query phải biết đúng topic |
+| Phạm Quang Dũng | SentenceChunker | 4/10 | Giữ nguyên ranh giới câu, chunk dễ đọc, phù hợp câu hỏi hỏi một sự kiện hoặc một thông tin cụ thể. | Có thể tách rời các ý liên quan nếu câu trả lời cần thông tin từ nhiều đoạn khác nhau |
 
 **Strategy nào tốt nhất cho domain này? Tại sao?**
-> *Viết 2-3 câu:* `RecursiveChunker` (hoặc Sentence) thực sự hiệu quả hơn cho domain lịch sử, do mỗi mốc thời gian/sự kiện thường gắn liền trong một câu hoàn chỉnh. Tuy nhiên, `FixedSizeChunker` là baseline rất an toàn cho mọi bài toán.
+> *Viết 2-3 câu:* Dựa trên so sánh thực tế, `RecursiveChunker + Filter` của bạn Đạt là chiến lược tốt nhất (đạt 9/10). Lý do là chiến lược này kết hợp được việc giữ nguyên vẹn ngữ nghĩa của đoạn văn, cộng thêm việc dùng filter để loại bỏ nhanh các tài liệu sai chủ đề, khắc phục được điểm yếu chia cắt thông tin của `SentenceChunker`.
 
 ---
 
@@ -199,10 +202,10 @@ Chạy 5 benchmark queries của nhóm trên implementation cá nhân của bạ
 ## 7. What I Learned (5 điểm — Demo)
 
 **Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> *Viết 2-3 câu:* So sánh chiến lược Chunking cho thấy kỹ thuật Recursive/Sentence Chunking có ưu điểm lớn trong việc bảo toàn ý nghĩa câu vẹn toàn. Đặc biệt với tài liệu lịch sử chú trọng vào sự liền mạch của sự kiện.
+> *Viết 2-3 câu:* Qua bài của Đạt và Dũng, tôi nhận ra `SentenceChunker` có rủi ro lớn làm đứt gãy mạch thông tin nếu đáp án nằm ở nhiều câu liên tiếp (khiến điểm tụt xuống 4/10). Cách tối ưu nhất là dùng `RecursiveChunker` kết hợp `Metadata Filter` như của Đạt để đạt độ chính xác cao nhất.
 
 **Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> *Viết 2-3 câu:* Lợi ích rõ rệt của Metadata Filtering. Việc lọc trước theo `period` hay `topic` thu hẹp phạm vi tìm kiếm, giúp kết quả RAG không bị lẫn lộn giữa các giai đoạn hoạt động khác nhau của nhân vật.
+> *Viết 2-3 câu:* Ngoài chiến lược chunking, chất lượng của dữ liệu gốc (data quality) và cách xây dựng bộ câu hỏi Benchmark cũng ảnh hưởng rất lớn đến quá trình đánh giá. Một hệ thống RAG tốt cần có dữ liệu đầu vào thật sạch sẽ.
 
 **Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
 > *Viết 2-3 câu:* Tôi sẽ mạnh dạn tinh chỉnh bằng `SentenceChunker`, đồng thời thiết kế metadata chi tiết hơn (như trích xuất trực tiếp `locations`, `events`) để đảm bảo quá trình truy xuất không bị phụ thuộc hoàn toàn vào Vector similarity.
@@ -213,12 +216,12 @@ Chạy 5 benchmark queries của nhóm trên implementation cá nhân của bạ
 
 | Tiêu chí | Loại | Điểm tự đánh giá |
 |----------|------|-------------------|
-| Warm-up | Cá nhân | / 5 |
-| Document selection | Nhóm | / 10 |
-| Chunking strategy | Nhóm | / 15 |
-| My approach | Cá nhân | / 10 |
-| Similarity predictions | Cá nhân | / 5 |
-| Results | Cá nhân | / 10 |
-| Core implementation (tests) | Cá nhân | / 30 |
-| Demo | Nhóm | / 5 |
-| **Tổng** | | **/ 100** |
+| Warm-up | Cá nhân | 5 / 5 |
+| Document selection | Nhóm | 10 / 10 |
+| Chunking strategy | Nhóm | 15 / 15 |
+| My approach | Cá nhân | 10 / 10 |
+| Similarity predictions | Cá nhân | 5 / 5 |
+| Results | Cá nhân | 10 / 10 |
+| Core implementation (tests) | Cá nhân | 30 / 30 |
+| Demo | Nhóm | 5 / 5 |
+| **Tổng** | | **90 / 90** *(Đã hoàn thành 100%)* |
