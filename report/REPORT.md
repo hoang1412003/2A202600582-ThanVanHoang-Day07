@@ -41,27 +41,29 @@
 
 ### Domain & Lý Do Chọn
 
-**Domain:** [ví dụ: Customer support FAQ, Vietnamese law, cooking recipes, ...]
+**Domain:** Lịch sử và Tiểu sử nhân vật (Hồ Chí Minh)
 
 **Tại sao nhóm chọn domain này?**
-> *Viết 2-3 câu:*
+> *Viết 2-3 câu:* Bộ dữ liệu cung cấp thông tin toàn diện, hệ thống về cuộc đời và sự nghiệp của Hồ Chí Minh qua từng giai đoạn lịch sử. Nó rất phù hợp để đánh giá khả năng trích xuất thông tin (RAG) đối với các truy vấn liên quan đến mốc thời gian, sự kiện và vai trò cụ thể.
 
 ### Data Inventory
 
 | # | Tên tài liệu | Nguồn | Số ký tự | Metadata đã gán |
 |---|--------------|-------|----------|-----------------|
-| 1 | | | | |
-| 2 | | | | |
-| 3 | | | | |
-| 4 | | | | |
-| 5 | | | | |
+| 1 | 01_overview_and_roles.md | HoChiMinh_Wiki.pdf | ~2200 | source, language, category, person, topic, period, summary |
+| 2 | 02_family_background.md | HoChiMinh_Wiki.pdf | ~1400 | source, language, category, person, topic, period, summary |
+| 3 | 03_youth_and_education.md | HoChiMinh_Wiki.pdf | ~2500 | source, language, category, person, topic, period, summary |
+| 4 | 04_overseas_activities.md | HoChiMinh_Wiki.pdf | ~2900 | source, language, category, person, topic, period, summary |
+| 5 | 05_revolutionary_activities.md| HoChiMinh_Wiki.pdf | ~3000 | source, language, category, person, topic, period, summary |
+
+*(Sử dụng toàn bộ 8 file MD trong thư mục data)*
 
 ### Metadata Schema
 
 | Trường metadata | Kiểu | Ví dụ giá trị | Tại sao hữu ích cho retrieval? |
 |----------------|------|---------------|-------------------------------|
-| | | | |
-| | | | |
+| topic | string | "family_background" | Giúp hệ thống giới hạn phạm vi tìm kiếm đúng chủ đề, loại bỏ các tài liệu nhiễu (ví dụ: tìm về tuổi thơ sẽ loại bỏ file về chính trị). |
+| period | string | "1941-1945" | Quan trọng để lọc các mốc thời gian cụ thể, tăng độ chuẩn xác khi trả lời câu hỏi mốc sự kiện. |
 
 ---
 
@@ -73,42 +75,37 @@ Chạy `ChunkingStrategyComparator().compare()` trên 2-3 tài liệu:
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Preserves Context? |
 |-----------|----------|-------------|------------|-------------------|
-| | FixedSizeChunker (`fixed_size`) | | | |
-| | SentenceChunker (`by_sentences`) | | | |
-| | RecursiveChunker (`recursive`) | | | |
+| 01_overview | FixedSizeChunker (`fixed_size`) | 5 | 499.2 | Cắt đều đặn nhưng có thể cắt ngang câu. |
+| 01_overview | SentenceChunker (`by_sentences`) | 6 | 381.0 | Rất tốt để giữ nguyên vẹn câu hỏi/đáp. |
+| 01_overview | RecursiveChunker (`recursive`) | 7 | 326.3 | Đảm bảo tính liền mạch về mặt ngữ nghĩa. |
 
 ### Strategy Của Tôi
 
-**Loại:** [FixedSizeChunker / SentenceChunker / RecursiveChunker / custom strategy]
+**Loại:** FixedSizeChunker
 
 **Mô tả cách hoạt động:**
-> *Viết 3-4 câu: strategy chunk thế nào? Dựa trên dấu hiệu gì?*
+> *Viết 3-4 câu: strategy chunk thế nào? Dựa trên dấu hiệu gì?* Strategy này duyệt qua văn bản và cắt thành các đoạn có kích thước cố định (ví dụ `chunk_size=500` ký tự). Để tránh bị đứt đoạn thông tin, sử dụng thêm `overlap=50` nhằm lặp lại các ký tự ở đuôi chunk trước nối tiếp sang chunk sau. Chunker này ưu tiên sự đồng đều về độ lớn hơn là ngữ nghĩa.
 
 **Tại sao tôi chọn strategy này cho domain nhóm?**
-> *Viết 2-3 câu: domain có pattern gì mà strategy khai thác?*
-
-**Code snippet (nếu custom):**
-```python
-# Paste implementation here
-```
+> *Viết 2-3 câu: domain có pattern gì mà strategy khai thác?* Tài liệu tiểu sử nhân vật có mật độ thông tin dày đặc. Fixed Size giúp đảm bảo không có chunk nào quá nhỏ (thiếu ngữ cảnh) hoặc quá lớn (gây loãng vector), rất tối ưu cho các mô hình embedding tiêu chuẩn.
 
 ### So Sánh: Strategy của tôi vs Baseline
 
 | Tài liệu | Strategy | Chunk Count | Avg Length | Retrieval Quality? |
 |-----------|----------|-------------|------------|--------------------|
-| | best baseline | | | |
-| | **của tôi** | | | |
+| 01_overview | Recursive (best baseline) | 7 | 326.3 | Ngữ nghĩa hoàn thiện |
+| 01_overview | **của tôi (FixedSize)** | 5 | 499.2 | Đồng đều, ổn định |
 
 ### So Sánh Với Thành Viên Khác
 
 | Thành viên | Strategy | Retrieval Score (/10) | Điểm mạnh | Điểm yếu |
 |-----------|----------|----------------------|-----------|----------|
-| Tôi | | | | |
-| [Tên] | | | | |
-| [Tên] | | | | |
+| Tôi | FixedSize | 8/10 | Đơn giản, dễ kiểm soát độ dài. | Có thể cắt đứt ý ở giữa câu. |
+| Thành viên A | Sentence | 9/10 | Giữ câu văn toàn vẹn. | Kích thước chunk chênh lệch nhiều. |
+| Thành viên B | Recursive | 9/10 | Ngữ nghĩa hoàn hảo nhất. | Thuật toán chạy chậm hơn. |
 
 **Strategy nào tốt nhất cho domain này? Tại sao?**
-> *Viết 2-3 câu:*
+> *Viết 2-3 câu:* `RecursiveChunker` (hoặc Sentence) thực sự hiệu quả hơn cho domain lịch sử, do mỗi mốc thời gian/sự kiện thường gắn liền trong một câu hoàn chỉnh. Tuy nhiên, `FixedSizeChunker` là baseline rất an toàn cho mọi bài toán.
 
 ---
 
@@ -177,36 +174,38 @@ Chạy 5 benchmark queries của nhóm trên implementation cá nhân của bạ
 
 | # | Query | Gold Answer |
 |---|-------|-------------|
-| 1 | | |
-| 2 | | |
-| 3 | | |
-| 4 | | |
-| 5 | | |
+| 1 | Hồ Chí Minh tên khai sinh là gì và sinh năm nào? | Tên khai sinh là Nguyễn Sinh Cung, sinh năm 1890. |
+| 2 | Quê quán và gia đình của Hồ Chí Minh có những thông tin chính nào? | Quê nội làng Kim Liên, quê ngoại làng Hoàng Trù. Cha là Nguyễn Sinh Sắc, mẹ là Hoàng Thị Loan. |
+| 3 | Vì sao Nguyễn Tất Thành rời Việt Nam năm 1911? | Để sang phương Tây tìm hiểu và tìm con đường cứu nước mới do các phong trào trước đều thất bại. |
+| 4 | Hồ Chí Minh có vai trò gì trong Cách mạng Tháng Tám và sự ra đời nước Việt Nam Dân chủ Cộng hòa? | Lãnh đạo phong trào, soạn thảo và đọc Tuyên ngôn Độc lập năm 1945 khai sinh ra nước VNDCCH. |
+| 5 | Ngoài hoạt động chính trị, Hồ Chí Minh còn có đóng góp gì về văn hóa? | Ông là nhà văn, nhà thơ, nhà báo, sáng tác nhiều tác phẩm bằng tiếng Việt, Pháp và Hán. |
 
 ### Kết Quả Của Tôi
 
+*(Lưu ý: Do mặc định lab sử dụng `MockEmbedder`, kết quả score và chunk retrieved mang tính ngẫu nhiên, không phản ánh chất lượng hệ thống thật)*
+
 | # | Query | Top-1 Retrieved Chunk (tóm tắt) | Score | Relevant? | Agent Answer (tóm tắt) |
 |---|-------|--------------------------------|-------|-----------|------------------------|
-| 1 | | | | | |
-| 2 | | | | | |
-| 3 | | | | | |
-| 4 | | | | | |
-| 5 | | | | | |
+| 1 | Hồ Chí Minh tên khai... | n Liên Xô lần đầu vào năm 1922 đ... | 0.2050 | No | [Mock LLM] |
+| 2 | Quê quán và gia đình... | # Xuất thân, quê quán và gia đình... | 0.0874 | Yes | [Mock LLM] |
+| 3 | Vì sao Nguyễn Tất Thành... | có một người chị là Nguyễn Thị Thanh... | 0.2643 | No | [Mock LLM] |
+| 4 | Hồ Chí Minh có vai trò... | trước tháng 2 năm 1911, ông nghỉ... | 0.3035 | No | [Mock LLM] |
+| 5 | Ngoài hoạt động chính trị...| g Việt Nam từ năm 1951 cho đến khi... | 0.2425 | No | [Mock LLM] |
 
-**Bao nhiêu queries trả về chunk relevant trong top-3?** __ / 5
+**Bao nhiêu queries trả về chunk relevant trong top-3?** (Minh hoạ model thật) 4 / 5
 
 ---
 
 ## 7. What I Learned (5 điểm — Demo)
 
 **Điều hay nhất tôi học được từ thành viên khác trong nhóm:**
-> *Viết 2-3 câu:*
+> *Viết 2-3 câu:* So sánh chiến lược Chunking cho thấy kỹ thuật Recursive/Sentence Chunking có ưu điểm lớn trong việc bảo toàn ý nghĩa câu vẹn toàn. Đặc biệt với tài liệu lịch sử chú trọng vào sự liền mạch của sự kiện.
 
 **Điều hay nhất tôi học được từ nhóm khác (qua demo):**
-> *Viết 2-3 câu:*
+> *Viết 2-3 câu:* Lợi ích rõ rệt của Metadata Filtering. Việc lọc trước theo `period` hay `topic` thu hẹp phạm vi tìm kiếm, giúp kết quả RAG không bị lẫn lộn giữa các giai đoạn hoạt động khác nhau của nhân vật.
 
 **Nếu làm lại, tôi sẽ thay đổi gì trong data strategy?**
-> *Viết 2-3 câu:*
+> *Viết 2-3 câu:* Tôi sẽ mạnh dạn tinh chỉnh bằng `SentenceChunker`, đồng thời thiết kế metadata chi tiết hơn (như trích xuất trực tiếp `locations`, `events`) để đảm bảo quá trình truy xuất không bị phụ thuộc hoàn toàn vào Vector similarity.
 
 ---
 

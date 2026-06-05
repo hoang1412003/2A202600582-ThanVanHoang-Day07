@@ -2,6 +2,29 @@
 
 Tài liệu này giải thích chi tiết những dòng code đã được implement trong Phase 1 (Bài tập cá nhân) để bạn có thể nắm vững kiến thức về RAG (Retrieval-Augmented Generation).
 
+## Tổng quan Luồng hoạt động (RAG Architecture)
+
+Sơ đồ dưới đây tóm tắt quy trình hệ thống từ lúc nạp tài liệu vào (Data Ingestion) đến lúc trả lời câu hỏi của người dùng (Query Flow):
+
+```mermaid
+flowchart TD
+    subgraph Data_Ingestion ["1. Nạp dữ liệu (Indexing)"]
+        Doc[Tài liệu gốc] --> Chunker["Chunking\n(Cắt nhỏ theo Câu/Đoạn)"]
+        Chunker --> Chunks[Các chunks]
+        Chunks --> Embed["Embedding Model\n(Sinh Vector)"]
+        Embed --> VDB[/"Vector Store"\]
+    end
+
+    subgraph Query_Flow ["2. Quá trình Truy vấn (RAG)"]
+        User((User)) -- Đặt câu hỏi --> Agent[KnowledgeBaseAgent]
+        Agent -- "1. Tìm kiếm (Retrieve)" --> VDB
+        VDB -- "2. Trả về Top-K Chunks" --> Agent
+        Agent -- "3. Nối Context + Hỏi LLM" --> LLM["Mô hình LLM"]
+        LLM -- "4. Sinh câu trả lời" --> Agent
+        Agent -- "5. Trả kết quả" --> User
+    end
+```
+
 ---
 
 ## 1. Chunking - Cắt nhỏ văn bản (`src/chunking.py`)
