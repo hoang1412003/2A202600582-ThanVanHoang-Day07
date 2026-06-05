@@ -158,14 +158,14 @@ collecting ... collected 42 items
 
 | Pair | Sentence A | Sentence B | Dự đoán | Actual Score | Đúng? |
 |------|-----------|-----------|---------|--------------|-------|
-| 1 | I love programming in Python. | Coding in Python is my passion. | high | N/A | N/A |
-| 2 | The cat sat on the mat. | A dog barked loudly at the mailman. | low | N/A | N/A |
-| 3 | Artificial intelligence is the future. | Machine learning shapes tomorrow. | high | N/A | N/A |
-| 4 | I want to eat pizza tonight. | The weather is very nice today. | low | N/A | N/A |
-| 5 | Water boils at 100 degrees Celsius. | H2O becomes gas at 100C. | high | N/A | N/A |
+| 1 | I love programming in Python. | Coding in Python is my passion. | high | 0.0031 | Sai |
+| 2 | The cat sat on the mat. | A dog barked loudly at the mailman. | low | 0.0505 | Đúng (thấp) |
+| 3 | Artificial intelligence is the future. | Machine learning shapes tomorrow. | high | -0.0983 | Sai |
+| 4 | I want to eat pizza tonight. | The weather is very nice today. | low | 0.1233 | Sai (lại cao hơn cả câu 1) |
+| 5 | Water boils at 100 degrees Celsius. | H2O becomes gas at 100C. | high | 0.1972 | Sai (tương đối thấp) |
 
 **Kết quả nào bất ngờ nhất? Điều này nói gì về cách embeddings biểu diễn nghĩa?**
-> *Viết 2-3 câu:* (Lưu ý: Lab dùng MockEmbedder nên score thực tế sẽ random không ý nghĩa, bảng này dùng để dự đoán nếu là model thật). Điều quan trọng nhất rút ra là embedding model chất lượng sẽ nhận ra sự liên hệ về mặt ngữ nghĩa (ví dụ "Water" và "H2O") mà không cần đối chiếu từng ký tự, cho phép retrieval cực kỳ chính xác.
+> *Viết 2-3 câu:* Bất ngờ nhất là các câu có ý nghĩa giống hệt nhau (như câu 1 và câu 3) lại có điểm số cực kỳ thấp, thậm chí là số âm (-0.0983). Điều này chứng minh rất rõ ràng rằng `MockEmbedder` (vector ngẫu nhiên) hoàn toàn không có khả năng thấu hiểu ngữ nghĩa chữ viết. Nếu không dùng một mô hình ngôn ngữ (Language Model) thật sự, hệ thống RAG không thể tự đối chiếu các từ đồng nghĩa hay cấu trúc câu khác nhau.
 
 ---
 
